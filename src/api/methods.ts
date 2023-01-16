@@ -2,39 +2,38 @@ import { v4 as uuidv4 } from 'uuid';
 import { User } from '../types/user';
 import { users } from '../mockUsers';
 
-export const findAll = async (): Promise<User[]> => Object.values(users);
+export const getAllUsers = async (): Promise<User[]> => {
+  return users;
+};
 
-export const find = async (id: number): Promise<User> => users[id];
+export const getUserById = async (id: string): Promise<User | void> => {
+  return users.find((user) => user.id === id);
+};
 
-export const create = async (newUser): Promise<User> => {
+export const createUser = async (newUser: User): Promise<User | null> => {
   const id = uuidv4();
-
-  users[id] = {
+  const createdUser = {
     id,
     ...newUser,
   };
-
-  return users[id];
+  users.push(createdUser);
+  return createdUser;
 };
 
-export const update = async (id: number, updatedUser): Promise<User | null> => {
-  const user = await find(id);
+export const update = async (
+  id: string,
+  updatedUser: User
+): Promise<User | null> => {
+  const user = await getUserById(id);
+  return user ? { id, ...updatedUser } : null;
+};
 
+export const remove = async (id: string): Promise<boolean | null> => {
+  const user = await getUserById(id);
   if (!user) {
     return null;
   }
-
-  users[id] = { id, ...updatedUser };
-
-  return users[id];
-};
-
-export const remove = async (id: number): Promise<null | void> => {
-  const user = await find(id);
-
-  if (!user) {
-    return null;
-  }
-
-  delete users[id];
+  let index = users.findIndex((user) => user.id == id);
+  if (index > 0 || index == 0) users.splice(index, 1);
+  return true;
 };
